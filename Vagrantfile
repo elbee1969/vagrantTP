@@ -9,6 +9,11 @@
   # install docker
   snap install docker
   snap start docker
+
+  # config cle rsa pour jenkins
+  cd ~/.ssh
+  ssh-keygen -f jenkinsAgent
+  cat jenkinsAgent.pub  >> authorized_keys
 SCRIPT
 ###############
 
