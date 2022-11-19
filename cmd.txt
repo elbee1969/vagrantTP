@@ -1,0 +1,27 @@
+  
+  git clone https://github.com/fpicot31/Jenkins-vagrant.git
+  
+  vagrant -v
+  vagrant up
+  vagrant ssh  jenkins
+  ssh vagrant@192.168.5.4
+  vagrant status
+  vagrant global-status --prune
+  vagrant halt jenkins
+  vagrant reload --provision jenkins
+  vagrant ssh-config
+
+  git status
+  git add .
+  git commit -m "dos2unix"
+  git push
+  
+  # pour deployer avec jenkins
+  cd ~/.ssh
+  ssh-keygen -f jenkinsAgent
+  cat jenkinsAgent.pub  >> authorized_keys
+  ajouter le plugin SSH agent dans jenkins
+  creer un credential ssh-agent qui sera utilise dans le jenkinsfile du pipeline : 
+       ajouter la cle prive jenkinsAgent : choisir le pipeline en question, cliquer sur pipeline syntax, 
+       puis choisir ssh agent; Copie la cle public, pas de passphrase, mettre un id, etc
+ 
