@@ -1,0 +1,45 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+############### INLINE SCRIPTS
+@jenkins_install = <<SCRIPT
+  echo "Installing Snap"
+  apt install snapd
+  service snapd start
+  
+  echo "Installing Jenkins"
+  snap install jenkins --classic
+  snap start jenkins
+
+  echo "Generation des cles RSA jenkinsAgent"
+  cd ~/.ssh
+  ssh-keygen -f jenkinsAgent
+  cat jenkinsAgent.pub  >> authorized_keys
+SCRIPT
+###############
+
+
+Vagrant.configure("2") do |config|
+  config.vm.boot_timeout = 1200
+
+  config.vm.box = "bento/ubuntu-16.04"
+  config.vm.network :private_network, ip: "192.168.5.6"
+  config.vm.hostname = "jupiter" 
+  
+  config.vm.provider :virtualbox do |v|
+         v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+         v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+         v.customize ["modifyvm", :id, "--memory", 2048]
+         v.customize ["modifyvm", :id, "--name", "jupiter"]
+         v.customize ["modifyvm", :id, "--cpus", "2"]
+  end
+	  
+  config.vm.provision "shell", inline: <<-SHELL
+         sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
+         service ssh restart
+  SHELL
+  
+  # provisionning jenkins
+  config.vm.provision "shell", inline: @jenkins_install
+   
+end
