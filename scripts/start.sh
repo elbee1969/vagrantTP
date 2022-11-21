@@ -13,7 +13,7 @@ sudo docker network ls | grep jenkins
 if [ $? -ne 0 ]
 then
    echo "creation du docker network jenkins"
-   sudo docker network create jenkins > /dev/null 2&>1
+   sudo docker network create jenkins
 fi
 
 sudo docker network ls | grep jenkins
