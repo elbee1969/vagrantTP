@@ -13,7 +13,7 @@ sudo docker network ls | grep jenkins
 if [ $? -ne 0 ]
 then
    echo "creation du docker network jenkins"
-   docker network create jenkins > /dev/null 2&>1
+   sudo docker network create jenkins > /dev/null 2&>1
 fi
 
 sudo docker network ls | grep jenkins
@@ -53,7 +53,7 @@ fi
 sudo docker ps | grep jenkins-blueocean
 if [ $? -eq 0 ]
 then
-   echo "Jenkins ocean deja demarre"
+   echo "Jenkins Ocean deja demarre !!!"
 else
    echo "Demarrage Jenkins Ocean en cours ..."
    sudo docker run --name jenkins-blueocean --detach   --network jenkins --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1   --publish 8080:8080 --publish 50000:50000   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   --volume "$HOME":/home   --restart=on-failure   --env JAVA_OPTS="-Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true"   myjenkins-blueocean:$VERSION
@@ -64,4 +64,3 @@ else
       echo "Erreur de demarrage de jenkins ocean !"
    fi
 fi
-
