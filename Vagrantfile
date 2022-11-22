@@ -34,8 +34,8 @@ SCRIPT
 Vagrant.configure("2") do |config|
   config.vm.boot_timeout = 1200
 
-  # serveur de production
-  config.vm.define "srvprod" do |srvprod|
+  # serveur de production 
+  config.vm.define "venus" do |srvprod|
       srvprod.vm.box = "bento/ubuntu-22.04"
       srvprod.vm.network :private_network, ip: "192.168.5.5"
       srvprod.vm.hostname = "srvprod"
@@ -44,7 +44,7 @@ Vagrant.configure("2") do |config|
          v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
          v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
          v.customize ["modifyvm", :id, "--memory", 2048]
-         v.customize ["modifyvm", :id, "--name", "srvprod"]
+         v.customize ["modifyvm", :id, "--name", "venus"]
          v.customize ["modifyvm", :id, "--cpus", "2"]
       end
 	  
