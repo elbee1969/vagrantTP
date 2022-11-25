@@ -23,7 +23,6 @@ Vagrant.configure("2") do |config|
 
    # serveur jenkins
    config.vm.define "jenkins" do |jenkins|
-   
       jenkins.vm.box = "bento/ubuntu-16.04"
       jenkins.vm.network :private_network, ip: "192.168.5.4"
       jenkins.vm.hostname = "jenkins" 
@@ -39,14 +38,14 @@ Vagrant.configure("2") do |config|
       # copie des shells
       jenkins.vm.synced_folder "./scripts/", "/home/vagrant/scripts", owner: "vagrant", group: "vagrant",:mount_options => ["dmode=777", "fmode=766"]
 
-	  # provisionning ssh
+      # provisionning ssh
       jenkins.vm.provision "shell", inline: <<-SHELL
          sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
 		 sed -i -e "s/\r//g" /home/vagrant/scripts/*
          service ssh restart
       SHELL
 
-	  # provisionning docker
+      # provisionning docker
       jenkins.vm.provision "shell", inline: @docker_install
    end
 		  
@@ -64,13 +63,13 @@ Vagrant.configure("2") do |config|
          v.customize ["modifyvm", :id, "--cpus", "2"]
       end
 	  
-  	  # provisionning ssh
+      # provisionning ssh
       srvprod.vm.provision "shell", inline: <<-SHELL
          sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
          service ssh restart
       SHELL
 
-	  # provisionning docker
+      # provisionning docker
       srvprod.vm.provision "shell", inline: @docker_install
    end
 
