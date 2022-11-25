@@ -38,7 +38,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "venus" do |srvprod|
       srvprod.vm.box = "bento/ubuntu-22.04"
       srvprod.vm.network :private_network, ip: "192.168.5.5"
-      srvprod.vm.hostname = "srvprod"
+      srvprod.vm.hostname = "venus"
 
       srvprod.vm.provider :virtualbox do |v|
          v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
@@ -53,8 +53,8 @@ Vagrant.configure("2") do |config|
      # provisionning
      #srvprod.vm.provision "shell", inline: @snap_install
      srvprod.vm.provision "shell", inline: @key_install
-     #srvprod.vm.provision "shell", inline: @docker_install
-     srvprod.vm.provision "shell", path: "./scripts/install-docker.sh"
+     srvprod.vm.provision "shell", inline: @docker_install
+     #srvprod.vm.provision "shell", path: "./scripts/install-docker.sh"
 
 
      # provisionning ssh
@@ -86,7 +86,8 @@ Vagrant.configure("2") do |config|
      # config.vm.provision "shell", inline: @docker_install
      config.vm.provision "shell", inline: @key_install
      config.vm.provision "shell", path: "./scripts/install-jenkins.sh"
-     config.vm.provision "shell", path: "./scripts/install-docker.sh"
+     config.vm.provision "shell", inline: @docker_install
+     #config.vm.provision "shell", path: "./scripts/install-docker.sh"
 
      config.vm.provision "shell", inline: <<-SHELL
          sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
