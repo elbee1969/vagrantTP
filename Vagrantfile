@@ -2,97 +2,76 @@
 # vi: set ft=ruby :
 
 ############### INLINE SCRIPTS
-@key_install = <<SCRIPT
-  echo "Generate RSA key"
-  ssh-keygen -f id_rsa
-  cat id_rsa.pub  >> authorized_keys
-SCRIPT
-
-@snap_install = <<SCRIPT
-  echo "Installing Snap"
+@docker_install = <<SCRIPT
   apt install snapd
   service snapd start
-SCRIPT
-
-@jenkins_install = <<SCRIPT  
-  echo "Installing Jenkins"
-  sudo apt install default-jre
-  wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
-  sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
-  sudo apt update
-  sudo apt install jenkins
-  sudo systemctl start jenkins
-SCRIPT
-
-@docker_install = <<SCRIPT
-  echo "Installing Docker"
+  
+  # install docker
   snap install docker
   snap start docker
+
+  # config cle rsa pour jenkins
+  cd ~/.ssh
+  ssh-keygen -f jenkinsAgent
+  cat jenkinsAgent.pub  >> authorized_keys
 SCRIPT
 ###############
 
 Vagrant.configure("2") do |config|
-  config.vm.boot_timeout = 1200
 
-  # serveur de production 
-  config.vm.define "venus" do |srvprod|
-      srvprod.vm.box = "bento/ubuntu-22.04"
-      srvprod.vm.network :private_network, ip: "192.168.5.5"
-      srvprod.vm.hostname = "venus"
+   config.vm.boot_timeout = 1200
+
+   # serveur jenkins
+   config.vm.define "jenkins" do |jenkins|
+      jenkins.vm.box = "bento/ubuntu-16.04"
+      jenkins.vm.network :private_network, ip: "192.168.5.1"
+      jenkins.vm.hostname = "jenkins" 
+	  
+      jenkins.vm.provider :virtualbox do |v|
+         v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+         v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+         v.customize ["modifyvm", :id, "--memory", 2048]
+         v.customize ["modifyvm", :id, "--name", "jenkins"]
+         v.customize ["modifyvm", :id, "--cpus", "2"]
+      end
+  
+      # copie des shells
+      jenkins.vm.synced_folder "./scripts/", "/home/vagrant/scripts", owner: "vagrant", group: "vagrant",:mount_options => ["dmode=777", "fmode=766"]
+
+      # provisionning ssh
+      jenkins.vm.provision "shell", inline: <<-SHELL
+         sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
+		 sed -i -e "s/\r//g" /home/vagrant/scripts/*
+         service ssh restart
+      SHELL
+
+      # provisionning docker
+      jenkins.vm.provision "shell", inline: @docker_install
+   end
+		  
+   # serveur de production
+   config.vm.define "srvprod" do |srvprod|
+      srvprod.vm.box = "bento/ubuntu-16.04"
+      srvprod.vm.network :private_network, ip: "192.168.5.2"
+      srvprod.vm.hostname = "srvprod"
 
       srvprod.vm.provider :virtualbox do |v|
          v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
          v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
          v.customize ["modifyvm", :id, "--memory", 2048]
-         v.customize ["modifyvm", :id, "--name", "venus"]
+         v.customize ["modifyvm", :id, "--name", "srvprod"]
          v.customize ["modifyvm", :id, "--cpus", "2"]
       end
 	  
-     config.vm.synced_folder "./scripts/", "/home/vagrant/scripts", owner: "vagrant", group: "vagrant",:mount_options => ["dmode=777", "fmode=766"]
-
-     # provisionning
-     #srvprod.vm.provision "shell", inline: @snap_install
-     srvprod.vm.provision "shell", inline: @key_install
-     srvprod.vm.provision "shell", inline: @docker_install
-     #srvprod.vm.provision "shell", path: "./scripts/install-docker.sh"
-
-
-     # provisionning ssh
-     srvprod.vm.provision "shell", inline: <<-SHELL
+      # provisionning ssh
+      srvprod.vm.provision "shell", inline: <<-SHELL
          sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
          service ssh restart
-     SHELL
-  end
-   
-  # serveur jenkins
-  config.vm.define "jupiter" do |config|
-     config.vm.box = "bento/ubuntu-22.04"
-     config.vm.network :private_network, ip: "192.168.5.6"
-     config.vm.hostname = "jupiter" 
-  
-     config.vm.provider :virtualbox do |v|
-         v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-         v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
-         v.customize ["modifyvm", :id, "--memory", 2048]
-         v.customize ["modifyvm", :id, "--name", "jupiter"]
-         v.customize ["modifyvm", :id, "--cpus", "2"]
-     end
+      SHELL
 
-     # copie des shells
-     config.vm.synced_folder "./scripts/", "/home/vagrant/scripts", owner: "vagrant", group: "vagrant",:mount_options => ["dmode=777", "fmode=766"]
+      # provisionning docker
+      srvprod.vm.provision "shell", inline: @docker_install
+   end
 
-     # provisionning
-     # config.vm.provision "shell", inline: @snap_install
-     # config.vm.provision "shell", inline: @docker_install
-     config.vm.provision "shell", inline: @key_install
-     config.vm.provision "shell", path: "./scripts/install-jenkins.sh"
-     config.vm.provision "shell", inline: @docker_install
-     #config.vm.provision "shell", path: "./scripts/install-docker.sh"
-
-     config.vm.provision "shell", inline: <<-SHELL
-         sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
-         service ssh restart
-     SHELL
-  end
-  
 end
+  
