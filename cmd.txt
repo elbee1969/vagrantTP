@@ -4,19 +4,12 @@
   vagrant -v
   vagrant up
   vagrant ssh  jenkins
-  ssh vagrant@192.168.5.4
-  vagrant status
   vagrant global-status --prune
   vagrant halt jenkins
   vagrant reload --provision jenkins
   vagrant ssh-config
-
-  git status
-  git add .
-  git commit -m "dos2unix"
-  git push
   
-  # pour deployer avec jenkins
+  # pour deployer dans le pieline jenkins
   cd ~/.ssh
   ssh-keygen -t rsa
   cat id_rsa.pub  >> authorized_keys
@@ -26,5 +19,5 @@
        ajouter la cle prive jenkinsAgent : choisir le pipeline en question, cliquer sur pipeline syntax, 
        puis choisir ssh agent; Copie la cle public, pas de passphrase, mettre un id, etc
  
-  # lancement sur la vm de prod depuis la vm jenkins
-  ssh -v -o StrictHostKeyChecking=no vagrant@192.168.5.5 'sudo docker run -d --name monserver -p 8081:80 atos06/ipiformation:1.0'
+  # pour lancer l'application web sur la vm de prod depuis la vm jenkins
+  ssh -v -o StrictHostKeyChecking=no vagrant@192.168.5.20 'sudo docker run -d --name monserver -p 8081:80 atos06/ipiformation:1.0'
