@@ -1,0 +1,13 @@
+
+
+-- Lancer la creation des environnements : jenkins et srvprod 
+vagrant up
+
+-- Se connecter par ssh sur la VM jenkins
+vagrant ssh jenkins
+
+-- Lancer jenkins depuis la VM
+cd scripts
+./start.sh
+
+
