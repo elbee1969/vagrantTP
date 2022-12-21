@@ -63,6 +63,10 @@ Vagrant.configure("2") do |config|
          v.customize ["modifyvm", :id, "--cpus", "2"]
       end
 	  
+       # copie vault docker 
+      srvprod.vm.synced_folder "./vault/", "/home/vagrant/vault", owner: "vagrant", group: "vagrant",:mount_options => ["dmode=777", "fmode=766"]
+
+
       # provisionning ssh
       srvprod.vm.provision "shell", inline: <<-SHELL
          sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
